@@ -1,42 +1,65 @@
 version: '2.2'
 
 networks:
-  default:
+  yii2-test:
+
+volumes:
+  s3_upload_data:
 
 services:
 
-  php-min:
+  php:
     build:
       dockerfile: Dockerfile-${DOCKERFILE_FLAVOUR}
       context: 'php'
-      target: min
+      target: dev
       args:
         - PHP_BASE_IMAGE_VERSION
         - X_LEGACY_GD_LIB
         - PECL_XDEBUG_INSTALL_SUFFIX
         - PECL_MONGODB_INSTALL_SUFFIX
         - PECL_IMAGICK_INSTALL_SUFFIX
-    image: ${PHP_IMAGE_NAME}:${PHP_BASE_IMAGE_VERSION}${PHP_IMAGE_VERSION_SUFFIX}-min
+    image: ${PHP_IMAGE_NAME}:${PHP_BASE_IMAGE_VERSION}${PHP_IMAGE_VERSION_SUFFIX}
     environment:
-      - GITHUB_API_TOKEN=${GITHUB_API_TOKEN}
       - PHP_ENABLE_XDEBUG
       - TEST_RUNTIME_PATH=/tmp/runtime
     volumes:
-      - ./tests:/tests:delegated
-      # Framework testing
-      - ./_host-volumes/yii2:/yii2:delegated
       # Application testing
-      - ./_host-volumes/app:/app:delegated
+      - ./app:/app:delegated
       # Composer cache
       - ~/.composer-docker/cache:/root/.composer/cache:delegated
     networks:
-      default:
+      yii2-test:
         aliases:
           - php
 
-  php-dev:
-    extends:
-      service: php-min
-    build:
-      target: dev
-    image: ${PHP_IMAGE_NAME}:${PHP_BASE_IMAGE_VERSION}${PHP_IMAGE_VERSION_SUFFIX}
+  mysql:
+    image: mysql
+    restart: unless-stopped
+    ports:
+      - '3306:3306'
+    volumes:
+      - ./data/db:/var/lib/mysql
+      - ./data/backup:/mnt
+    environment:
+      - MYSQL_ROOT_PASSWORD
+      - MYSQL_DATABASE
+    command: [ 'mysqld', '--character-set-server=utf8mb4', '--collation-server=utf8mb4_general_ci', '--sql_mode=only_full_group_by' ]
+    networks:
+      yii2-test:
+
+  minio:
+    restart: unless-stopped
+    image: minio/minio
+    environment:
+      - MINIO_ROOT_USER
+      - MINIO_ROOT_PASSWORD
+    volumes:
+      - s3_upload_data:/data/upload
+    ports:
+      - '9000:9000'
+      - '9090:9090'
+    command: server /data/upload --console-address ":9090"
+    networks:
+      yii2-test:
+
