@@ -8,18 +8,18 @@ volumes:
 
 services:
 
-  php-min:
+  php:
     build:
       dockerfile: Dockerfile-${DOCKERFILE_FLAVOUR}
       context: 'php'
-      target: min
+      target: dev
       args:
         - PHP_BASE_IMAGE_VERSION
         - X_LEGACY_GD_LIB
         - PECL_XDEBUG_INSTALL_SUFFIX
         - PECL_MONGODB_INSTALL_SUFFIX
         - PECL_IMAGICK_INSTALL_SUFFIX
-    image: ${PHP_IMAGE_NAME}:${PHP_BASE_IMAGE_VERSION}${PHP_IMAGE_VERSION_SUFFIX}-min
+    image: ${PHP_IMAGE_NAME}:${PHP_BASE_IMAGE_VERSION}${PHP_IMAGE_VERSION_SUFFIX}
     environment:
       - GITHUB_API_TOKEN=${GITHUB_API_TOKEN}
       - PHP_ENABLE_XDEBUG
@@ -34,13 +34,6 @@ services:
       yii2-test:
         aliases:
           - php
-
-  php-dev:
-    extends:
-      service: php-min
-    build:
-      target: dev
-    image: ${PHP_IMAGE_NAME}:${PHP_BASE_IMAGE_VERSION}${PHP_IMAGE_VERSION_SUFFIX}
 
   mysql:
     image: mysql
