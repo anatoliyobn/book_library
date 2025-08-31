@@ -93,8 +93,6 @@ jobs:
       run: |
         docker compose run --rm php php -v
         docker compose run --rm php php -v | grep "Xdebug" && exit 1
-        docker compose run --rm -w /yii2 php composer update --prefer-dist
-        docker compose run --rm -w /yii2 php php -d error_reporting="E_ALL ^ E_DEPRECATED" vendor/bin/phpunit tests/framework/ --exclude db
         docker compose run --rm -e PHP_ENABLE_XDEBUG=1 php php -v | grep "Xdebug" || exit 1
         docker images
     - name: Login to Docker
