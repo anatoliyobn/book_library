@@ -21,11 +21,9 @@ services:
         - PECL_IMAGICK_INSTALL_SUFFIX
     image: ${PHP_IMAGE_NAME}:${PHP_BASE_IMAGE_VERSION}${PHP_IMAGE_VERSION_SUFFIX}
     environment:
-      - GITHUB_API_TOKEN=${GITHUB_API_TOKEN}
       - PHP_ENABLE_XDEBUG
       - TEST_RUNTIME_PATH=/tmp/runtime
     volumes:
-      - ./tests:/tests:delegated
       # Application testing
       - ./app:/app:delegated
       # Composer cache
@@ -56,16 +54,6 @@ services:
     environment:
       - MINIO_ROOT_USER
       - MINIO_ROOT_PASSWORD
-#      - MINIO_BROWSER_REDIRECT_URL
-#      - MINIO_DOMAIN
-    #    volumes:
-#      - minio_data:/data
-#    volumes:
-#      - ./data/db:/var/lib/mysql
-#      - ./data/backup:/mnt
-#    ports:
-#      - '${MINIO_PORT:-9000}:9000'
-#      - '9020:9020'
     volumes:
       - s3_upload_data:/data/upload
     ports:
